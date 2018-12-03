@@ -9,6 +9,6 @@ namespace Refactoring_0.After
     public interface IGameRules
     {
         bool NeedContinue(Map map);
-        bool CalculateLiveStatus(Field field);
+        bool CalculateLiveStatus(Field field, int livingNeighbours);
     }
 }

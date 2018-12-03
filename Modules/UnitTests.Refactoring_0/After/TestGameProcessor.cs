@@ -9,6 +9,20 @@ namespace UnitTests.Refactoring_0.After
     public class TestGameProcessor
     {
         [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void GameProcessor_Ctor_Validation_Map()
+        {
+            new GameProcessor(null, new GameRulesDefault());
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException))]
+        public void GameProcessor_Ctor_Validation_Rules()
+        {
+            new GameProcessor(new Map(), null);
+        }
+
+        [TestMethod]
         public void GameProcessor_Step_0()
         {
             Map map = GetMap();

@@ -8,9 +8,8 @@ namespace Refactoring_0.After
 {
     public class GameRulesDefault : IGameRules
     {
-        public bool CalculateLiveStatus(Field field)
+        public bool CalculateLiveStatus(Field field, int livingNeighbours)
         {
-            int livingNeighbours = field.GetLivingNeighbours();
             if (field.Live)
             {
                 if (livingNeighbours < 2)

@@ -62,8 +62,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="After\MapPrinterStub.cs" />
     <Compile Include="After\TestGameProcessor.cs" />
+    <Compile Include="After\TestGameRulesDefault.cs" />
+    <Compile Include="After\TestMap.cs" />
     <Compile Include="Before\TestDailyChallenge38.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -41,9 +41,10 @@ namespace Refactoring_0.After
         {
             _map.AddNeighbours();
             Dictionary<Field, bool> nextLives = new Dictionary<Field, bool>();
-            foreach (Field f in _map.Fields)
+            foreach (Field field in _map.Fields)
             {
-                nextLives.Add(f, _gameRules.CalculateLiveStatus(f));
+                bool nextStatus = _gameRules.CalculateLiveStatus(field, _map.CalculateLivingNeighbours(field));
+                nextLives.Add(field, nextStatus);
             }
             foreach (var pair in nextLives)
             {

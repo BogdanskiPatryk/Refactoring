@@ -9,7 +9,7 @@ namespace Refactoring_0.After
 {
     public class Map
     {
-        private Dictionary<int, Map_Row> _map = new Dictionary<int, Map_Row>();
+        private Dictionary<int, Dictionary<int, Field>> _map = new Dictionary<int, Dictionary<int, Field>>();
 
         public IEnumerable<Field> Fields
         {
@@ -18,15 +18,15 @@ namespace Refactoring_0.After
                 List<Field> fields = new List<Field>();
                 foreach(var row in _map)
                 {
-                    fields.AddRange(row.Value.Fields);
+                    fields.AddRange(row.Value.Values);
                 }
                 return fields;
             }
         }
 
-        public bool IsAnyLive =>_map.Any(x => x.Value.IsAnyLive);
+        public bool IsAnyLive =>_map.Any(x => x.Value.Values.Any(f => f.Live));
 
-        public Map(IEnumerable<Tuple<int, int>> lives)
+        public Map(IEnumerable<Tuple<int, int>> lives = null)
         {
             if (lives != null)
             {
@@ -34,95 +34,74 @@ namespace Refactoring_0.After
                 {
                     if (_map.ContainsKey(live.Item2) == false)
                     {
-                        _map[live.Item2] = new Map_Row();
+                        _map[live.Item2] = new Dictionary<int, Field>();
                     }
                     Field field = new Field { X = live.Item1, Y = live.Item2, Live = true };
-                    _map[live.Item2].AddField(field);
+                    _map[live.Item2][live.Item1] = field;
                 }
             }
+        }
+
+        public int CalculateLivingNeighbours(Field field)
+        {
+            if (field == null)
+            {
+                throw new ArgumentNullException(nameof(field));
+            }
+            int livingNeigh = 0;
+            DoForAllNeighbours(field, (x, y) =>
+            {
+                livingNeigh += IsLive(x, y) ? 1 : 0;
+            });
+            return livingNeigh;
         }
 
         public void AddNeighbours()
         {
             foreach (var pair in _map.ToList())
             {
-                foreach (Field field in pair.Value.Fields.ToList())
+                foreach (Field field in pair.Value.Values.ToList())
                 {
-                    if (field.N == null)
-                    {
-                        field.N = AddNeighbour(field.X, field.Y - 1);
-                        field.N.S = field;
-                    }
-                    if (field.S == null)
-                    {
-                        field.S = AddNeighbour(field.X, field.Y + 1);
-                        field.S.N = field;
-                    }
-                    if (field.E == null)
-                    {
-                        field.E = AddNeighbour(field.X + 1, field.Y);
-                        field.E.W = field;
-                    }
-                    if (field.W == null)
-                    {
-                        field.W = AddNeighbour(field.X - 1, field.Y);
-                        field.W.E = field;
-                    }
-                    if (field.NE == null)
-                    {
-                        field.NE = AddNeighbour(field.X + 1, field.Y - 1);
-                        field.NE.SW = field;
-                    }
-                    if (field.SE == null)
-                    {
-                        field.SE = AddNeighbour(field.X + 1, field.Y + 1);
-                        field.SE.NW = field;
-                    }
-                    if (field.NW == null)
-                    {
-                        field.NW = AddNeighbour(field.X - 1, field.Y - 1);
-                        field.NW.SE = field;
-                    }
-                    if (field.SW == null)
-                    {
-                        field.SW = AddNeighbour(field.X - 1, field.Y + 1);
-                        field.SW.NE = field;
-                    }
+                    DoForAllNeighbours(field, (x, y) => AddField(x, y));
                 }
             }
         }
+
+        private void DoForAllNeighbours(Field field, Action<int,int> action)
+        {
+            for (int x = field.X - 1; x <= field.X + 1; x++)
+                for (int y = field.Y - 1; y <= field.Y + 1; y++)
+                {
+                    if (x == field.X && y == field.Y)
+                    {
+                        continue;
+                    }
+                    action(x, y);
+                }
+        }
         
-        public Field AddNeighbour(int x, int y)
+        private void AddField(int x, int y)
         {
             if (_map.ContainsKey(y) == false)
             {
-                _map[y] = new Map_Row();
+                _map[y] = new Dictionary<int, Field>();
             }
-            Field existing = _map[y].Fields.FirstOrDefault(f => f.X == x);
-            if (existing != null)
+            if (_map[y].ContainsKey(x) == false)
             {
-                return existing;
+                _map[y][x] = new Field() { X = x, Y = y, Live = false };
             }
-            existing = new Field() { X = x, Y = y, Live = false};
-            _map[y].AddField(existing);
-            return existing;
         }
 
-        private class Map_Row
+        private bool IsLive(int x, int y)
         {
-            private HashSet<Field> _fields = new HashSet<Field>();
-
-            public bool IsAnyLive =>_fields.Any(x => x.Live);
-
-            public IEnumerable<Field> Fields => _fields;
-
-            public void AddField(Field field)
+            if (_map.TryGetValue(y, out Dictionary<int,Field> row))
             {
-                if (_fields.Add(field) == false)
+                if (row.TryGetValue(x, out Field field))
                 {
-                    throw new ArgumentException($"Field '({field.X},{field.Y})' already exist");
+                    return field.Live;
                 }
             }
+            return false;
         }
     }
 }
