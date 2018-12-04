@@ -58,12 +58,9 @@ namespace Refactoring_0.After
 
         public void AddNeighbours()
         {
-            foreach (var pair in _map.ToList())
+            foreach (Field field in Fields.Where(x => x.Live).ToList())
             {
-                foreach (Field field in pair.Value.Values.ToList())
-                {
-                    DoForAllNeighbours(field, (x, y) => AddField(x, y));
-                }
+                DoForAllNeighbours(field, (x, y) => AddField(x, y));
             }
         }
 
